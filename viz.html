@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        div.content {
+            max-width: 1050px;   
+            margin: -5px auto;           
+        }
+        #tableau-viz
+        { 
+            
+        }
+        #observablehq 
+        {
+/*            box-shadow: 0 9px 0px 0px white, 0 -9px 0px 0px white, 0 0 20px 10px grey; 5px 0 5px -4px grey, -5px 0 5px -4px grey;*/
+            max-width: 800px;
+            margin: -5px auto;    
+        }
+        div#version-select 
+        {
+            margin: 0 0 0 5px;
+            float: left;
+        }
+        #observablehq>div
+        {         
+        }
+        #observablehq div svg
+        {
+            margin: 0 auto;
+            display: block;
+        }
+        .observablehq-viewof-sunburst, 
+        .observablehq-breadcrumb {
+            margin: 0 auto;
+            max-width: 650px;
+        }
+        .observablehq-intro, 
+        .observablehq-outro 
+        {
+            margin: 0 10px;
+        }
+        .observablehq-outro img {
+            margin-top: 4px;
+            margin-right: 1px;
+        }
+        body {
+            font: 12px Verdana, sans-serif;
+/*            margin: -8px 0 0 0;*/
+/*            background-color: gainsboro;*/
+        }
+    </style>
+    <script type="application/javascript">
+        async function update_viz() 
+        {
+            document.querySelector("#observablehq .observablehq-viewof-sunburst").innerHTML = "";
+            document.querySelector("#observablehq .observablehq-breadcrumb").innerHTML = "";
+            document.querySelector("#observablehq .observablehq-intro").innerHTML = "";
+            document.querySelector("#observablehq .observablehq-outro").innerHTML = "";
+            
+            let select_value = document.getElementById("viz").value;
+            let viz_id = viz_map[select_value];
+            
+            if (viz_id == "all_orgs")
+            {
+                document.querySelector("#observablehq").style.display = "none";
+                document.querySelector("#tableau-viz").style.display = "";
+                
+                if (!tableau_loaded) {
+                    var divElement = document.getElementById('tableau-viz');
+                    var vizElement = divElement.getElementsByTagName('object')[0];
+                    if (divElement.offsetWidth > 800) {
+                        vizElement.style.width = '100%';
+                        vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
+                    } else if (divElement.offsetWidth > 500) {
+                        vizElement.style.width = '100%';
+                        vizElement.style.height = (divElement.offsetWidth * 0.75) + 'px';
+                    } else {
+                        vizElement.style.width = '100%';
+                        vizElement.style.minHeight = '900px';
+                        vizElement.style.maxHeight = (divElement.offsetWidth * 1.77) + 'px';
+                    }
+                    var scriptElement = document.createElement('script');
+                    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
+                    vizElement.style.overflow = 'none';
+                    vizElement.parentNode.insertBefore(scriptElement, vizElement);
+                        tableau_loaded = true;
+                }
+            }
+            else
+            {            
+                const {Runtime, Inspector} = await import("https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js");
+                const mod = await import(`https://api.observablehq.com/d/${viz_id}.js?v=3`);
+                const define = mod.default;
+
+                const runtime = new Runtime();
+                const module = runtime.module(define, name => {
+                    if (name === "viewof sunburst") return Inspector.into("#observablehq .observablehq-viewof-sunburst")();
+                    if (name === "breadcrumb") return Inspector.into("#observablehq .observablehq-breadcrumb")();
+                    if (name == "intro") return Inspector.into("#observablehq .observablehq-intro")();
+                    if (name == "outro") return Inspector.into("#observablehq .observablehq-outro")();
+                  });
+                
+                document.querySelector("#observablehq").style.display = "";
+                document.querySelector("#tableau-viz").style.display = "none";  
+            }
+        }        
+        
+        
+        function change_viz() {
+            window.location.hash = '#' + document.getElementById('viz').value;
+        }
+    </script>
+</head>
+<body>
+    <div id="version-select">
+        <select name="viz" id="viz" onchange="change_viz()">
+            <option value="summary">Sunburst Summary</option>
+            <option value="zoomable">Sunburst Zoomable</option>
+            <option value="top_org">Top Organism</option>
+            <option value="all_orgs">All Organisms Summary</option>
+        </select>
+    </div>
+    
+    <div class='content'>
+        <div class='tableauPlaceholder' id='tableau-viz' style='position: relative; display: none'><noscript><a href='#'><img alt=' ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;20&#47;20200820TopOrganismschosen_15993352483270&#47;Completeviz&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz' style='display:none;'>
+                    <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' />
+                    <param name='embed_code_version' value='3' />
+                    <param name='site_root' value='' />
+                    <param name='name' value='20200820TopOrganismschosen_15993352483270&#47;Completeviz' />
+                    <param name='tabs' value='no' />
+                    <param name='toolbar' value='no' />
+                    <param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;20&#47;20200820TopOrganismschosen_15993352483270&#47;Completeviz&#47;1.png' />
+                    <param name='animate_transition' value='yes' />
+                    <param name='display_static_image' value='yes' />
+                    <param name='display_spinner' value='yes' />
+                    <param name='display_overlay' value='yes' />
+                    <param name='display_count' value='yes' />
+                    <param name='language' value='en' /></object>
+            </div>
+            <script type='text/javascript'>
+            </script>
+        <div id="observablehq" style="display: none">
+          <div class="observablehq-intro"></div>
+          <div class="observablehq-viewof-sunburst"></div>
+          <div class="observablehq-breadcrumb"></div>
+          <div class="observablehq-outro"></div>
+        </div>
+    </div>
+    <script type="application/javascript">
+        const viz_map = {
+                        summary: "cf2a05be8b4d19dc",
+                        zoomable: "05fe2ee7658cd479",
+                        top_org: "b5ad540a27f4fd74",
+                        all_orgs: "all_orgs"
+                    }
+        
+        var tableau_loaded = false;
+        
+        var viz_hash = window.location.hash.split('#')[1];
+        
+        if (viz_hash != undefined && viz_hash != "")
+        {
+            document.getElementById("viz").value = viz_hash;
+        }
+        else {
+            document.getElementById("viz").selectedIndex = "0";
+            window.location.hash = '#' + document.getElementById('viz').value;
+            viz_hash = window.location.hash.split('#')[1];
+        }
+        
+        update_viz();
+        
+        window.setInterval(function () {
+            var curr_hash = window.location.hash.split('#')[1];
+            if (curr_hash != viz_hash) {
+                viz_hash = curr_hash;
+                document.getElementById("viz").value = viz_hash;
+                update_viz();
+            }
+        }, 100);
+    </script>
+</body>
+</html>
+
